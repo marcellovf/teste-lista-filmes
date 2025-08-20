@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Adicione estilos globais aqui, se necessário */
+
+/* Exemplo de como o tema escuro pode ser aplicado */
+html.dark {
+  /* Você pode definir variáveis CSS ou aplicar estilos diretamente */
+  /* --color-bg-primary: #1a202c; */
+  /* --color-text-primary: #e2e8f0; */
+}
+
+body {
+  @apply bg-slate-100 text-slate-900;
+}
+
+html.dark body {
+  @apply bg-slate-900 text-slate-100;
+}
