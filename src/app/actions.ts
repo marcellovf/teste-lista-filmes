@@ -155,8 +155,7 @@ export async function registerAction(prevState: FormState, formData: FormData) {
       },
     });
 
-  } catch (error) {
-    console.error('Erro no registro:', error);
+  } catch {
     return { message: 'Ocorreu um erro no servidor ao criar o usuário.' };
   }
 
