@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Clapperboard, LogIn, LogOut, PlusCircle } from 'lucide-react';
-import { getLoginStatus, logoutAction } from '@/app/actions';
+import { logoutAction } from '@/app/actions';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -11,8 +11,6 @@ const Header = () => {
     logout()
     logoutAction();
   };
-
-  console
 
   return (
     <header className="bg-slate-800 shadow-md">

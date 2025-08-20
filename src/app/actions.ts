@@ -4,7 +4,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
-import { encrypt, getSession, updateSession } from '@/lib/auth';
+import { encrypt, getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { moviesPerPage } from '@/lib/consts';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -120,6 +120,7 @@ export async function loginAction(prevState: FormState, formData: FormData) {
     cookieStore.set('session', session, { expires });
     return {user: user.name}
   } catch (error) {
+    console.error('Erro no login:', error)
     return { message: 'Ocorreu um erro no servidor.' };
   }
 }
@@ -269,8 +270,7 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
     });
 
     return { message: 'Filme adicionado com sucesso!' };
-  } catch (error) {
-    console.error('Erro ao adicionar filme:', error);
+  } catch {
     return { message: 'Ocorreu um erro ao adicionar o filme.' };
   }
 }

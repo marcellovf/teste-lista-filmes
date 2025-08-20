@@ -6,6 +6,7 @@ import { addMovieAction } from '@/app/actions';
 import { useEffect, useState } from 'react';
 import { Genre } from '@prisma/client';
 import { useRouter } from 'next/navigation';
+import { default as NextImage } from 'next/image';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -47,7 +48,6 @@ export default function AddMoviePage() {
           const canvasAspectRatio = targetWidth / targetHeight;
 
           let sx, sy, sWidth, sHeight; // Source rectangle
-          let dx, dy, dWidth, dHeight; // Destination rectangle
 
           if (imgAspectRatio > canvasAspectRatio) {
             // Image is wider than canvas, crop horizontally
@@ -126,7 +126,12 @@ export default function AddMoviePage() {
             {state.errors?.poster_path && <p className="text-sm text-red-400 mt-1">{state.errors.poster_path}</p>}
             {imagePreviewUrl && (
               <div className="mt-4 flex justify-center">
-                <img src={imagePreviewUrl} alt="Pré-visualização do Pôster" className="max-w-full h-auto rounded-md" style={{ maxWidth: '229px', maxHeight: '288px' }} />
+                <NextImage 
+                  src={imagePreviewUrl}
+                  alt="Pré-visualização do Pôster"
+                  className="max-w-full h-auto rounded-md"
+                  width={229} height={288}
+                />
               </div>
             )}
           </div>
