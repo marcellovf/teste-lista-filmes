@@ -291,3 +291,16 @@ export async function getLoginStatus() {
   const session = await getSession();
   return !!session; // Retorna true se houver sessão, false caso contrário
 }
+
+export async function getMovieByIdAction(id: number) {
+  try {
+    const movie = await prisma.movie.findUnique({
+      where: { id },
+      include: { genres: true },
+    });
+    return movie;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Falha ao buscar filme.');
+  }
+}
