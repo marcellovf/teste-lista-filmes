@@ -19,16 +19,11 @@ export async function decrypt(input: string): Promise<any> {
       algorithms: ['HS256'],
     });
     return payload;
-  } catch (error) {
+  } catch {
     // Retorna null se o token for inválido ou expirado
     return null;
   }
 }
-
-// export async function logout() {
-//   // Destroi a sessão
-//   cookies().set('session', '', { expires: new Date(0) });
-// }
 
 export async function getSession() {
   const cookieStore = await cookies();

@@ -38,7 +38,14 @@ const MovieList = ({ initialMoviesData, genres }: MovieListProps) => {
   useEffect(() => {
     const loadMovies = () => {
       startTransition(async () => {
-        const data = await getMoviesAction({ ...filters, query: debouncedQuery, page });
+        const data = await getMoviesAction({
+          ...filters,
+          genre: filters.genre ? String(filters.genre) : undefined,
+          query: debouncedQuery,
+          start_year: filters.start_year ? String(filters.start_year) : undefined,
+          end_year: filters.end_year ? String(filters.end_year) : undefined,
+          page,
+         });
         setMoviesData(data as MovieListData);
       });
     };
