@@ -10,6 +10,8 @@ import { moviesPerPage } from '@/lib/consts';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
+import jwt from 'jsonwebtoken';
+import { sendVerificationEmail } from '@/lib/email';
 
 const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION,
@@ -21,23 +23,22 @@ const s3Client = new S3Client({
 
 async function uploadFileToS3(file: File) {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
-
-  // Process image with sharp
+  
   const processedImageBuffer = await sharp(fileBuffer)
     .resize(229, 336, {
-      fit: 'cover', // Cover ensures the dimensions are filled, cropping if necessary
-      position: 'center', // Focus on the most "interesting" part of the image
+      fit: 'cover',// Ajusta a imagem para o tamanho pedido
+      position: 'center',
     })
-    .jpeg({ quality: 90 }) // Convert to JPEG with 90% quality
+    .jpeg({ quality: 90 }) // Converte o JPEG com qualidade em 90%
     .toBuffer();
 
-  const fileName = `${uuidv4()}-${file.name.split('.').slice(0, -1).join('.')}.jpeg`; // Ensure .jpeg extension
+  const fileName = `${uuidv4()}-${file.name.split('.').slice(0, -1).join('.')}.jpeg`;
 
   const params = {
     Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: fileName,
     Body: processedImageBuffer,
-    ContentType: 'image/jpeg', // Content type will always be jpeg after processing
+    ContentType: 'image/jpeg',
   };
 
   const command = new PutObjectCommand(params);
@@ -106,6 +107,10 @@ export async function loginAction(prevState: FormState, formData: FormData) {
       return { message: 'Credenciais inválidas.' };
     }
 
+    if (!user.isVerified) {
+      return { message: 'Por favor, verifique seu e-mail antes de fazer login.' };
+    }
+
     const passwordsMatch = await bcrypt.compare(password, user.password);
     if (!passwordsMatch) {
       return { message: 'Credenciais inválidas.' };
@@ -146,20 +151,28 @@ export async function registerAction(prevState: FormState, formData: FormData) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(email)
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: '2d' });
+    const verificationExpires = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days
 
     await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
+        verificationToken,
+        verificationExpires,
       },
     });
 
-  } catch {
+    await sendVerificationEmail(email, verificationToken);
+
+  } catch (error) {
+    console.error(error)
     return { message: 'Ocorreu um erro no servidor ao criar o usuário.' };
   }
 
-  redirect('/'); // Redireciona para a página de login após o registro
+  return { message: 'Email de verificação enviado! Por favor, verifique sua caixa de entrada.' };
 }
 
 export async function logoutAction() {
@@ -260,8 +273,8 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
       data: {
         title,
         poster_path: s3PosterPath,
-        release_year: parseInt(release_year as string),
-        durationInMinutes: parseInt(durationInMinutes as string),
+        release_year: release_year,
+        durationInMinutes: durationInMinutes,
         genres: {
           connect: genres.map(genreId => ({ id: parseInt(genreId) })),
         },

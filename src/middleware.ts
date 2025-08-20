@@ -3,21 +3,20 @@ import { cookies } from 'next/headers';
 import { updateSession } from './lib/auth';
 
 // Rotas que não exigem autenticação
-const publicRoutes = ['/', '/register'];
+const publicRoutes = ['/register', '/api/verify'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Verifica se a rota é pública
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = pathname === '/' || publicRoutes.some(route => pathname.startsWith(route));
 
   // Obtém a sessão do usuário
   const cookieStore = await cookies();
   const session = cookieStore.get('session')
-
   if (isPublicRoute) {
     // Se o usuário está logado e tenta acessar uma rota pública (ex: login), redireciona para /movies
-    if (session) {
+    if (session && (pathname === '/' || pathname === '/register')) {
       return NextResponse.redirect(new URL('/movies', request.url));
     }
   } else {
@@ -42,6 +41,6 @@ export const config = {
      * - _next/image (otimização de imagem)
      * - favicon.ico (ícone)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
