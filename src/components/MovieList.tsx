@@ -23,12 +23,11 @@ interface MovieListData {
 
 interface MovieListProps {
   initialMoviesData: MovieListData;
-  genres: Genre[];
 }
 
-const MovieList = ({ initialMoviesData, genres }: MovieListProps) => {
+const MovieList = ({ initialMoviesData }: MovieListProps) => {
   const [moviesData, setMoviesData] = useState(initialMoviesData);
-  const [filters, setFilters] = useState<{ query?: string; genre?: string; start_year?: number; end_year?: number; }>({});
+  const [filters, setFilters] = useState<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>({});
   const [page, setPage] = useState(1);
   const [isPending, startTransition] = useTransition();
   const isInitialMount = useRef(true);
@@ -40,7 +39,6 @@ const MovieList = ({ initialMoviesData, genres }: MovieListProps) => {
       startTransition(async () => {
         const data = await getMoviesAction({
           ...filters,
-          genre: filters.genre ? String(filters.genre) : undefined,
           query: debouncedQuery,
           start_year: filters.start_year ? String(filters.start_year) : undefined,
           end_year: filters.end_year ? String(filters.end_year) : undefined,
@@ -58,14 +56,14 @@ const MovieList = ({ initialMoviesData, genres }: MovieListProps) => {
     loadMovies();
   }, [debouncedQuery, filters.genre, filters.start_year, filters.end_year, page]);
 
-  const handleFilterChange = (newFilters: Partial<{ query?: string; genre?: string; start_year?: number; end_year?: number; }>) => {
+  const handleFilterChange = (newFilters: Partial<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>) => {
     setPage(1);
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
   return (
     <div className='sm:flex sm:flex-col sm:justify-center sm:items-center md:items-start'>
-      <SearchAndFilters genres={genres} filters={filters} onFilterChange={handleFilterChange} />
+      <SearchAndFilters filters={filters} onFilterChange={handleFilterChange} />
       
       {isPending ? (
         <div className="flex sm:justify-center items-center h-96">

@@ -1,11 +1,12 @@
 'use client';
-   
-import { useFormStatus } from 'react-dom';
-import { addMovieAction, getGenresAction } from '@/app/actions';
+
+import { getMovieByIdAction, updateMovieAction, getGenresAction } from '@/app/actions';
+import { Genre, Movie } from '@prisma/client';
 import { useActionState, useEffect, useState } from 'react';
-import { Genre } from '@prisma/client';
+import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { default as NextImage } from 'next/image';
+import { slugify } from '@/lib/slugify';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -15,57 +16,47 @@ function SubmitButton() {
       aria-disabled={pending}
       className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-wait"
     >
-      {pending ? 'Adicionando...' : 'Adicionar Filme'}
+      {pending ? 'Salvando...' : 'Salvar Alterações'}
     </button>
   );
 }
 
-export default function AddMoviePage() {
-  const initialState = { message: null, errors: {} };
-  const [state, formAction] = useActionState(addMovieAction, initialState);
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function EditMoviePage({ params }: PageProps) {
+  const [movie, setMovie] = useState<Movie & { genres: Genre[] } | null>(null);
   const [genres, setGenres] = useState<Genre[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const router = useRouter();
+
+  const [state, formAction] = useActionState(updateMovieAction, undefined);
+
+  useEffect(() => {
+    const movieId = parseInt(params.id, 10);
+    async function fetchData() {
+      const movieData = await getMovieByIdAction(movieId);
+      const genresData = await getGenresAction();
+      setMovie(movieData);
+      setGenres(genresData);
+      if (movieData?.poster_path) {
+        setImagePreviewUrl(movieData.poster_path);
+      }
+      setIsLoading(false);
+    }
+    fetchData();
+  }, [params.id]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const targetWidth = 229;
-          const targetHeight = 336;
-
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-
-          // Calculate aspect ratios
-          const imgAspectRatio = img.width / img.height;
-          const canvasAspectRatio = targetWidth / targetHeight;
-
-          let sx, sy, sWidth, sHeight; // Source rectangle
-
-          if (imgAspectRatio > canvasAspectRatio) {
-            // Image is wider than canvas, crop horizontally
-            sHeight = img.height;
-            sWidth = img.height * canvasAspectRatio;
-            sx = (img.width - sWidth) / 2;
-            sy = 0;
-          } else {
-            // Image is taller than canvas, crop vertically
-            sWidth = img.width;
-            sHeight = img.width / canvasAspectRatio;
-            sx = 0;
-            sy = (img.height - sHeight) / 2;
-          }
-
-          ctx?.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-          setImagePreviewUrl(canvas.toDataURL('image/jpeg', 0.9)); // Use JPEG for consistency with backend
-        };
-        img.src = e.target?.result as string;
+        setImagePreviewUrl(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     } else {
@@ -74,30 +65,28 @@ export default function AddMoviePage() {
   };
 
   useEffect(() => {
-    // Fetch genres from the server
-    const fetchGenres = async () => {
-      try {
-        const data = await getGenresAction();
-        setGenres(data);
-      } catch (error) {
-        console.error('Failed to fetch genres:', error);
-      }
-    };
-    fetchGenres();
-  }, []);
-
-  useEffect(() => {
-    if (state.message === 'Filme adicionado com sucesso!') {
+    if (state?.message === 'Filme atualizado com sucesso!') {
       alert(state.message);
-      router.push('/movies'); // Redireciona para a lista de filmes
+      if (movie) {
+        router.push(`/movies/${movie.id}/${slugify(movie.title)}`);
+      }
     }
-  }, [state.message, router]);
+  }, [state, router, movie]);
+
+  if (isLoading) {
+    return <div className="text-center text-white">Carregando...</div>;
+  }
+
+  if (!movie) {
+    return <div className="text-center text-white">Filme não encontrado.</div>;
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen mt-4 mb-4">
       <div className="w-full max-w-2xl p-8 space-y-6 bg-slate-800 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-center text-white">Adicionar Novo Filme</h1>
+        <h1 className="text-3xl font-bold text-center text-white">Editar Filme</h1>
         <form action={formAction} className="space-y-6" encType="multipart/form-data">
+          <input type="hidden" name="id" value={movie.id} />
           <div>
             <label htmlFor="title" className="text-sm font-medium text-slate-300 block mb-2">Título</label>
             <input
@@ -105,9 +94,9 @@ export default function AddMoviePage() {
               name="title"
               type="text"
               required
+              defaultValue={movie.title}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            {state.errors?.title && <p className="text-sm text-red-400 mt-1">{state.errors.title}</p>}
           </div>
 
           <div>
@@ -118,10 +107,8 @@ export default function AddMoviePage() {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              required
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            {state.errors?.poster_path && <p className="text-sm text-red-400 mt-1">{state.errors.poster_path}</p>}
             {imagePreviewUrl && (
               <div className="mt-4 flex justify-center">
                 <NextImage 
@@ -143,9 +130,9 @@ export default function AddMoviePage() {
               min="1800"
               max="2100"
               required
+              defaultValue={movie.release_year}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            {state.errors?.release_year && <p className="text-sm text-red-400 mt-1">{state.errors.release_year}</p>}
           </div>
 
           <div>
@@ -156,9 +143,9 @@ export default function AddMoviePage() {
               type="number"
               min="1"
               required
+              defaultValue={movie.durationInMinutes}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            {state.errors?.durationInMinutes && <p className="text-sm text-red-400 mt-1">{state.errors.durationInMinutes}</p>}
           </div>
 
           <div>
@@ -171,6 +158,7 @@ export default function AddMoviePage() {
                     id={`genre-${genre.id}`}
                     name="genres"
                     value={genre.id}
+                    defaultChecked={movie.genres.some(g => g.id === genre.id)}
                     className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
                   />
                   <label htmlFor={`genre-${genre.id}`} className="ml-2 block text-sm text-gray-300">
@@ -179,10 +167,9 @@ export default function AddMoviePage() {
                 </div>
               ))}
             </div>
-            {state.errors?.genres && <p className="text-sm text-red-400 mt-1">{state.errors.genres}</p>}
           </div>
 
-          {state.message && state.message !== 'Filme adicionado com sucesso!' && (
+          {state?.message && state.message !== 'Filme atualizado com sucesso!' && (
             <p className="text-sm text-red-400 text-center">{state.message}</p>
           )}
           
