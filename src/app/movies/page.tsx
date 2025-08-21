@@ -6,7 +6,7 @@ export default async function MoviesPage() {
   // Busca os dados iniciais do banco de dados Prisma
   const initialMovies = await prisma.movie.findMany({
     include: { genres: true },
-    orderBy: { release_year: 'desc' },
+    orderBy: { release_date: 'desc' },
     take: moviesPerPage, // Pega os 10 primeiros para a carga inicial
   });
 

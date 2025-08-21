@@ -30,13 +30,13 @@ const MovieCard = ({ movie }: MovieCardProps) => {
             </div>
           )}
         </div>
-        <div className="p-4 flex flex-col flex-grow">
+        <div className="p-4 flex flex-col">
           <h3 className="text-lg font-bold text-white flex-grow" title={movie.title}>
             {movie.title}
           </h3>
           <div className="flex justify-between items-center mt-2">
             <p className="text-sm text-slate-400">
-              {movie.release_year}
+              {new Date(movie.release_date).toLocaleDateString('pt-BR')}
             </p>
             <p className="text-sm text-slate-400">
               {movie.durationInMinutes} min
@@ -44,7 +44,7 @@ const MovieCard = ({ movie }: MovieCardProps) => {
           </div>
         </div>
         <div className="pb-4 pl-4 pr-4 flex flex-col flex-grow">
-          <h2 className="text-x2 font-semibold mb-2">Gêneros</h2>
+          <h2 className="text-x2 text-white font-semibold mb-2">Gêneros</h2>
           <div className="flex flex-wrap gap-2">
             {movie.genres.map(genre => (
               <span key={genre.id} className="bg-slate-700 text-white px-3 py-1 rounded-full text-sm">

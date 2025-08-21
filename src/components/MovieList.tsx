@@ -27,7 +27,7 @@ interface MovieListProps {
 
 const MovieList = ({ initialMoviesData }: MovieListProps) => {
   const [moviesData, setMoviesData] = useState(initialMoviesData);
-  const [filters, setFilters] = useState<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>({});
+  const [filters, setFilters] = useState<{ query?: string; genre?: string[]; start_date?: string; end_date?: string; }>({});
   const [page, setPage] = useState(1);
   const [isPending, startTransition] = useTransition();
   const isInitialMount = useRef(true);
@@ -40,8 +40,8 @@ const MovieList = ({ initialMoviesData }: MovieListProps) => {
         const data = await getMoviesAction({
           ...filters,
           query: debouncedQuery,
-          start_year: filters.start_year ? String(filters.start_year) : undefined,
-          end_year: filters.end_year ? String(filters.end_year) : undefined,
+          start_date: filters.start_date,
+          end_date: filters.end_date,
           page,
          });
         setMoviesData(data as MovieListData);
@@ -54,9 +54,9 @@ const MovieList = ({ initialMoviesData }: MovieListProps) => {
     }
 
     loadMovies();
-  }, [debouncedQuery, filters.genre, filters.start_year, filters.end_year, page]);
+  }, [debouncedQuery, filters.genre, filters.start_date, filters.end_date, page]);
 
-  const handleFilterChange = (newFilters: Partial<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>) => {
+  const handleFilterChange = (newFilters: Partial<{ query?: string; genre?: string[]; start_date?: string; end_date?: string; }>) => {
     setPage(1);
     setFilters(prev => ({ ...prev, ...newFilters }));
   };

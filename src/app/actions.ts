@@ -61,10 +61,15 @@ const RegisterFormSchema = AuthFormSchema.extend({
 const AddMovieFormSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),
   poster_path: z.instanceof(File).optional(),
-  release_year: z.preprocess(
+  original_title: z.string().min(1, { message: 'O título original é obrigatório.' }),
+  overview: z.string().min(1, { message: 'A descrição é obrigatória.' }),
+  budget: z.preprocess(
     (val) => Number(val),
-    z.number().int().min(1800).max(2100, { message: 'Ano de lançamento inválido.' }),
+    z.number().int().min(0, { message: 'Orçamento inválido.' }),
   ),
+  release_date: z.preprocess((arg) => {
+    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+  }, z.date({ message: 'Data de lançamento inválida.' })),
   durationInMinutes: z.preprocess(
     (val) => Number(val),
     z.number().int().min(1, { message: 'Duração inválida.' }),
@@ -79,7 +84,10 @@ export type FormState = | {
       name?: string[];
       title?: string[];
       poster_path?: string[];
-      release_year?: string[];
+      original_title?: string[];
+      overview?: string[];
+      budget?: string[];
+      release_date?: string[];
       durationInMinutes?: string[];
       genres?: string[];
     };
@@ -185,11 +193,11 @@ export async function logoutAction() {
 export async function getMoviesAction(filters: {
   query?: string;
   genre?: string[];
-  start_year?: string;
-  end_year?: string;
+  start_date?: string;
+  end_date?: string;
   page?: number;
 }) {
-  const { query, genre, start_year, end_year, page = 1 } = filters;
+  const { query, genre, start_date, end_date, page = 1 } = filters;
 
   const whereClause: any = {
     AND: [],
@@ -203,22 +211,22 @@ export async function getMoviesAction(filters: {
     whereClause.AND.push({ genres: { some: { id: { in: genre.map(id => parseInt(id)) } } } });
   }
 
-  if (start_year || end_year) {
-    const yearFilter: { gte?: number; lte?: number } = {};
-    if (start_year) {
-      yearFilter.gte = parseInt(start_year);
+  if (start_date || end_date) {
+    const dateFilter: { gte?: Date; lte?: Date } = {};
+    if (start_date) {
+      dateFilter.gte = new Date(start_date);
     }
-    if (end_year) {
-      yearFilter.lte = parseInt(end_year);
+    if (end_date) {
+      dateFilter.lte = new Date(end_date);
     }
-    whereClause.AND.push({ release_year: yearFilter });
+    whereClause.AND.push({ release_date: dateFilter });
   }
 
   try {
     const movies = await prisma.movie.findMany({
       where: whereClause,
       include: { genres: true },
-      orderBy: { release_year: 'desc' },
+      orderBy: { release_date: 'desc' },
       take: moviesPerPage,
       skip: (page - 1) * moviesPerPage,
     });
@@ -242,7 +250,10 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
   const validatedFields = AddMovieFormSchema.safeParse({
     title: formData.get('title'),
     poster_path: formData.get('poster_path') || undefined,
-    release_year: formData.get('release_year'),
+    original_title: formData.get('original_title'),
+    overview: formData.get('overview'),
+    budget: formData.get('budget'),
+    release_date: formData.get('release_date'),
     durationInMinutes: formData.get('durationInMinutes'),
     genres: formData.getAll('genres'),
   });
@@ -254,7 +265,7 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
     };
   }
 
-  const { title, poster_path, release_year, durationInMinutes, genres } = validatedFields.data;
+  const { title, poster_path, original_title, overview, budget, release_date, durationInMinutes, genres } = validatedFields.data;
 
   // Verifica se o usuário está autenticado
   const session = await getSession();
@@ -273,7 +284,10 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
       data: {
         title,
         poster_path: s3PosterPath,
-        release_year: release_year,
+        original_title,
+        overview,
+        budget,
+        release_date,
         durationInMinutes: durationInMinutes,
         genres: {
           connect: genres.map(genreId => ({ id: parseInt(genreId) })),
@@ -296,7 +310,10 @@ export async function updateMovieAction(prevState: FormState, formData: FormData
     id: formData.get('id'),
     title: formData.get('title'),
     poster_path: formData.get('poster_path') || undefined,
-    release_year: formData.get('release_year'),
+    original_title: formData.get('original_title'),
+    overview: formData.get('overview'),
+    budget: formData.get('budget'),
+    release_date: formData.get('release_date'),
     durationInMinutes: formData.get('durationInMinutes'),
     genres: formData.getAll('genres'),
   });
@@ -308,7 +325,7 @@ export async function updateMovieAction(prevState: FormState, formData: FormData
     };
   }
 
-  const { id, title, poster_path, release_year, durationInMinutes, genres } = validatedFields.data;
+  const { id, title, poster_path, original_title, overview, budget, release_date, durationInMinutes, genres } = validatedFields.data;
   const movieId = parseInt(id, 10);
 
   // Verifica se o usuário está autenticado
@@ -329,7 +346,10 @@ export async function updateMovieAction(prevState: FormState, formData: FormData
       data: {
         title,
         ...(s3PosterPath && { poster_path: s3PosterPath }),
-        release_year: release_year,
+        original_title,
+        overview,
+        budget,
+        release_date,
         durationInMinutes: durationInMinutes,
         genres: {
           set: genres.map(genreId => ({ id: parseInt(genreId) })),

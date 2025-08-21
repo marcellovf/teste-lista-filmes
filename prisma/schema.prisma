@@ -27,7 +27,10 @@ model Movie {
   id           Int      @id @default(autoincrement())
   title        String
   poster_path  String?
-  release_year Int
+  overview     String
+  release_date DateTime
+  original_title String
+  budget       Int
   durationInMinutes Int
   genres       Genre[]  @relation("MovieToGenre")
 }

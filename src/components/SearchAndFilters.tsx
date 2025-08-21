@@ -7,8 +7,8 @@ import Modal from './Modal';
 import { getGenresAction } from '@/app/actions';
 
 interface SearchAndFiltersProps {
-  filters: { query?: string; genre?: string[]; start_year?: number; end_year?: number; };
-  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>) => void;
+  filters: { query?: string; genre?: string[]; start_date?: string; end_date?: string; };
+  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string[]; start_date?: string; end_date?: string; }>) => void;
 }
 
 const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) => {
@@ -80,31 +80,29 @@ const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) =>
             </div>
           </div>
 
-          {/* Filtro de Ano */}
+          {/* Filtro de Data */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="start_year" className="text-sm text-slate-400 block mb-2">Ano Inicial</label>
+              <label htmlFor="start_date" className="text-sm text-slate-400 block mb-2">Data Inicial(Antiga)</label>
               <div className="relative">
                 <input
-                  type="number"
-                  id="start_year"
-                  placeholder="Ex: 2000"
-                  value={filters.start_year || ''}
-                  onChange={(e) => onFilterChange({ start_year: parseInt(e.target.value) || undefined })}
+                  type="date"
+                  id="start_date"
+                  value={filters.start_date || ''}
+                  onChange={(e) => onFilterChange({ start_date: e.target.value || undefined })}
                   className="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
               </div>
             </div>
             <div>
-              <label htmlFor="end_year" className="text-sm text-slate-400 block mb-2">Ano Final</label>
+              <label htmlFor="end_date" className="text-sm text-slate-400 block mb-2">Data Final(Recente)</label>
               <div className="relative">
                 <input
-                  type="number"
-                  id="end_year"
-                  placeholder="Ex: 2023"
-                  value={filters.end_year || ''}
-                  onChange={(e) => onFilterChange({ end_year: parseInt(e.target.value) || undefined })}
+                  type="date"
+                  id="end_date"
+                  value={filters.end_date || ''}
+                  onChange={(e) => onFilterChange({ end_date: e.target.value || undefined })}
                   className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
