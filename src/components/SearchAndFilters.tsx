@@ -5,6 +5,7 @@ import { Genre } from '@prisma/client';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { getGenresAction } from '@/app/actions';
+import ActiveFilters from './ActiveFilters';
 
 interface SearchAndFiltersProps {
   filters: { query?: string; genre?: string[]; start_date?: string; end_date?: string; };
@@ -56,6 +57,8 @@ const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) =>
           Filtros
         </button>
       </div>
+
+      <ActiveFilters filters={filters} onFilterChange={onFilterChange} genres={genres} />
 
       <Modal title="Filtros Avançados" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="grid grid-cols-1 gap-4">
