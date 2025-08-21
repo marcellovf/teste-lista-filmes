@@ -25,14 +25,12 @@ export default async function MovieDetailPage({ params }: PageProps) {
     <div className="container mx-auto p-4">
       <div className='flex justify-between items-center pb-4'>
         <Link href="/movies" className="hover:text-cyan-300 mb-4 ">
-          &larr; Voltar para a lista de filmes
+          &larr; Voltar para a lista
         </Link>
-        {/* <button
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
+        <Link href={`/movies/${id}/${params['movie-name']}/edit`} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
           <Pencil className="w-5 h-5" />
           Editar
-        </button> */}
+        </Link>
       </div>
       
 
@@ -78,8 +76,6 @@ export default async function MovieDetailPage({ params }: PageProps) {
               ))}
             </div>
           </div>
-
-          {/* Adicione mais detalhes do filme aqui, como sinopse, elenco, etc. */}
         </div>
       </div>
     </div>

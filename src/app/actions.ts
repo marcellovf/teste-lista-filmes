@@ -184,7 +184,7 @@ export async function logoutAction() {
 // Ação para buscar e filtrar filmes do banco de dados
 export async function getMoviesAction(filters: {
   query?: string;
-  genre?: string;
+  genre?: string[];
   start_year?: string;
   end_year?: string;
   page?: number;
@@ -199,8 +199,8 @@ export async function getMoviesAction(filters: {
     whereClause.AND.push({ title: { contains: query, mode: 'insensitive' } });
   }
 
-  if (genre) {
-    whereClause.AND.push({ genres: { some: { id: parseInt(genre) } } });
+  if (genre && genre.length > 0) {
+    whereClause.AND.push({ genres: { some: { id: { in: genre.map(id => parseInt(id)) } } } });
   }
 
   if (start_year || end_year) {
@@ -287,10 +287,67 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
   }
 }
 
+const UpdateMovieFormSchema = AddMovieFormSchema.extend({
+  id: z.string(),
+});
+
+export async function updateMovieAction(prevState: FormState, formData: FormData) {
+  const validatedFields = UpdateMovieFormSchema.safeParse({
+    id: formData.get('id'),
+    title: formData.get('title'),
+    poster_path: formData.get('poster_path') || undefined,
+    release_year: formData.get('release_year'),
+    durationInMinutes: formData.get('durationInMinutes'),
+    genres: formData.getAll('genres'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error,
+      message: 'Campos inválidos.',
+    };
+  }
+
+  const { id, title, poster_path, release_year, durationInMinutes, genres } = validatedFields.data;
+  const movieId = parseInt(id, 10);
+
+  // Verifica se o usuário está autenticado
+  const session = await getSession();
+  if (!session || !session.user) {
+    return { message: 'Você precisa estar logado para editar filmes.' };
+  }
+
+  let s3PosterPath: string | undefined = undefined;
+
+  try {
+    if (poster_path instanceof File && poster_path.size > 0) {
+      s3PosterPath = await uploadFileToS3(poster_path);
+    }
+
+    await prisma.movie.update({
+      where: { id: movieId },
+      data: {
+        title,
+        ...(s3PosterPath && { poster_path: s3PosterPath }),
+        release_year: release_year,
+        durationInMinutes: durationInMinutes,
+        genres: {
+          set: genres.map(genreId => ({ id: parseInt(genreId) })),
+        },
+      },
+    });
+
+    return { message: 'Filme atualizado com sucesso!' };
+  } catch {
+    return { message: 'Ocorreu um erro ao atualizar o filme.' };
+  }
+}
+
 export async function getLoginStatus() {
   const session = await getSession();
   return !!session; // Retorna true se houver sessão, false caso contrário
 }
+
 
 export async function getMovieByIdAction(id: number) {
   try {
@@ -302,5 +359,17 @@ export async function getMovieByIdAction(id: number) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Falha ao buscar filme.');
+  }
+}
+
+export async function getGenresAction() {
+  try {
+    const genres = await prisma.genre.findMany({
+      orderBy: { name: 'asc' },
+    });
+    return genres;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Falha ao buscar gêneros.');
   }
 }

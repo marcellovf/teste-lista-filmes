@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Film } from 'lucide-react';
 import type { Movie, Genre } from '@prisma/client';
+import { slugify } from '@/lib/slugify';
 
 interface MovieCardProps {
   movie: Movie & { genres: Genre[] };
@@ -9,17 +10,6 @@ interface MovieCardProps {
 
 const MovieCard = ({ movie }: MovieCardProps) => {
   const posterUrl = movie.poster_path || null;
-
-  const slugify = (text: string) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .replace(/\s+/g, '-') // Replace spaces with -
-      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-      .replace(/\-\-+/g, '-') // Replace multiple - with single -
-      .replace(/^-+/, '') // Trim - from start of text
-      .replace(/-+$/, ''); // Trim - from end of text
-  };
 
   return (
     <Link href={`/movies/${movie.id}/${slugify(movie.title)}`}>
@@ -51,6 +41,16 @@ const MovieCard = ({ movie }: MovieCardProps) => {
             <p className="text-sm text-slate-400">
               {movie.durationInMinutes} min
             </p>
+          </div>
+        </div>
+        <div className="pb-4 pl-4 pr-4 flex flex-col flex-grow">
+          <h2 className="text-x2 font-semibold mb-2">Gêneros</h2>
+          <div className="flex flex-wrap gap-2">
+            {movie.genres.map(genre => (
+              <span key={genre.id} className="bg-slate-700 text-white px-3 py-1 rounded-full text-sm">
+                {genre.name}
+              </span>
+            ))}
           </div>
         </div>
       </div>

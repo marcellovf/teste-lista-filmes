@@ -10,10 +10,6 @@ export default async function MoviesPage() {
     take: moviesPerPage, // Pega os 10 primeiros para a carga inicial
   });
 
-  const genres = await prisma.genre.findMany({
-    orderBy: { name: 'asc' },
-  });
-
   const moviesCount = await prisma.movie.count();
   const initialMoviesData = {
     page: 1,
@@ -25,7 +21,7 @@ export default async function MoviesPage() {
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Catálogo de Filmes</h1>
-      <MovieList initialMoviesData={initialMoviesData} genres={genres} />
+      <MovieList initialMoviesData={initialMoviesData} />
     </main>
   );
 }

@@ -2,17 +2,34 @@
 
 import { Search, Calendar, Tag, Filter } from 'lucide-react';
 import { Genre } from '@prisma/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { getGenresAction } from '@/app/actions';
 
 interface SearchAndFiltersProps {
-  genres: Genre[];
-  filters: { query?: string; genre?: string; start_year?: number; end_year?: number; };
-  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string; start_year?: number; end_year?: number; }>) => void;
+  filters: { query?: string; genre?: string[]; start_year?: number; end_year?: number; };
+  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string[]; start_year?: number; end_year?: number; }>) => void;
 }
 
-const SearchAndFilters = ({ genres, filters, onFilterChange }: SearchAndFiltersProps) => {
+const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [genres, setGenres] = useState<Genre[]>([]);
+
+  useEffect(() => {
+    async function fetchGenres() {
+      const genresData = await getGenresAction();
+      setGenres(genresData);
+    }
+    fetchGenres();
+  }, []);
+
+  const handleGenreChange = (genreId: string) => {
+    const currentGenres = filters.genre || [];
+    const newGenres = currentGenres.includes(genreId)
+      ? currentGenres.filter(id => id !== genreId)
+      : [...currentGenres, genreId];
+    onFilterChange({ genre: newGenres });
+  };
 
   return (
     <div className="bg-slate-800 p-4 rounded-lg mb-8 sm:w-full">
@@ -44,20 +61,22 @@ const SearchAndFilters = ({ genres, filters, onFilterChange }: SearchAndFiltersP
         <div className="grid grid-cols-1 gap-4">
           {/* Filtro de Gênero */}
           <div>
-            <label htmlFor="genre" className="text-sm text-slate-400 block mb-2">Gênero</label>
-            <div className="relative">
-              <select
-                id="genre"
-                value={filters.genre || ''}
-                onChange={(e) => onFilterChange({ genre: e.target.value })}
-                className="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none pr-10"
-              >
-                <option value="">Todos</option>
-                {genres.map(genre => (
-                  <option key={genre.id} value={genre.id}>{genre.name}</option>
-                ))}
-              </select>
-              <Tag className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
+            <label className="text-sm text-slate-400 block mb-2">Gênero</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {genres.map(genre => (
+                <div key={genre.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`genre-filter-${genre.id}`}
+                    checked={(filters.genre || []).includes(String(genre.id))}
+                    onChange={() => handleGenreChange(String(genre.id))}
+                    className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                  />
+                  <label htmlFor={`genre-filter-${genre.id}`} className="ml-2 block text-sm text-gray-300">
+                    {genre.name}
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
 
