@@ -22,9 +22,9 @@ function SubmitButton() {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditMoviePage({ params }: PageProps) {
@@ -36,9 +36,11 @@ export default function EditMoviePage({ params }: PageProps) {
 
   const [state, formAction] = useActionState(updateMovieAction, undefined);
 
+
   useEffect(() => {
-    const movieId = parseInt(params.id, 10);
     async function fetchData() {
+      const { id } = await params;
+      const movieId = Number(id);
       const movieData = await getMovieByIdAction(movieId);
       const genresData = await getGenresAction();
       setMovie(movieData);
@@ -49,7 +51,7 @@ export default function EditMoviePage({ params }: PageProps) {
       setIsLoading(false);
     }
     fetchData();
-  }, [params.id]);
+  }, [params]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -122,15 +124,50 @@ export default function EditMoviePage({ params }: PageProps) {
           </div>
 
           <div>
-            <label htmlFor="release_year" className="text-sm font-medium text-slate-300 block mb-2">Ano de Lançamento</label>
+            <label htmlFor="original_title" className="text-sm font-medium text-slate-300 block mb-2">Título Original</label>
             <input
-              id="release_year"
-              name="release_year"
-              type="number"
-              min="1800"
-              max="2100"
+              id="original_title"
+              name="original_title"
+              type="text"
               required
-              defaultValue={movie.release_year}
+              defaultValue={movie.original_title || ''}
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="release_date" className="text-sm font-medium text-slate-300 block mb-2">Data de Lançamento</label>
+            <input
+              id="release_date"
+              name="release_date"
+              type="date"
+              required
+              defaultValue={movie.release_date ? new Date(movie.release_date).toISOString().split('T')[0] : ''}
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="budget" className="text-sm font-medium text-slate-300 block mb-2">Orçamento</label>
+            <input
+              id="budget"
+              name="budget"
+              type="number"
+              min="0"
+              required
+              defaultValue={movie.budget || 0}
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="overview" className="text-sm font-medium text-slate-300 block mb-2">Descrição</label>
+            <textarea
+              id="overview"
+              name="overview"
+              rows={4}
+              required
+              defaultValue={movie.overview || ''}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>

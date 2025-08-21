@@ -5,14 +5,14 @@ import Image from 'next/image';
 import { Film, Calendar, Clock, Pencil } from 'lucide-react';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
     'movie-name': string;
-  };
+  }>;
 }
 
 export default async function MovieDetailPage({ params }: PageProps) {
-  const { id } = params;
+  const { id, 'movie-name': movieName } = await params;
   const movieId = Number(id);
   
   const movie = await getMovieByIdAction(movieId);
@@ -27,7 +27,7 @@ export default async function MovieDetailPage({ params }: PageProps) {
         <Link href="/movies" className="hover:text-cyan-300 mb-4 ">
           &larr; Voltar para a lista
         </Link>
-        <Link href={`/movies/${id}/${params['movie-name']}/edit`} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+        <Link href={`/movies/${id}/${movieName}/edit`} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
           <Pencil className="w-5 h-5" />
           Editar
         </Link>
@@ -52,18 +52,29 @@ export default async function MovieDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <div className="p-6 md:w-2/3 flex flex-col w-full">
+        <div className="p-6 md:pt-0 md:w-2/3 flex flex-col w-full">
           <h1 className="text-4xl font-bold mb-2">{movie.title}</h1>
+          <h2 className="text-2xl text-slate-300 mb-4">{movie.original_title}</h2>
           
           <div className="flex items-center text-slate-400 mb-4">
             <div className="flex items-center mr-6">
               <Calendar className="w-5 h-5 mr-2" />
-              <span>{movie.release_year}</span>
+              <span>{new Date(movie.release_date).toLocaleDateString('pt-BR')}</span>
             </div>
             <div className="flex items-center">
               <Clock className="w-5 h-5 mr-2" />
               <span>{movie.durationInMinutes} min</span>
             </div>
+          </div>
+
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Orçamento</h2>
+            <p className="text-slate-300">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(movie.budget)}</p>
+          </div>
+
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+            <p className="text-slate-300">{movie.overview}</p>
           </div>
 
           <div className="mb-4">

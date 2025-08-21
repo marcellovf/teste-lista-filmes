@@ -135,17 +135,52 @@ export default function AddMoviePage() {
           </div>
 
           <div>
-            <label htmlFor="release_year" className="text-sm font-medium text-slate-300 block mb-2">Ano de Lançamento</label>
+            <label htmlFor="original_title" className="text-sm font-medium text-slate-300 block mb-2">Título Original</label>
             <input
-              id="release_year"
-              name="release_year"
-              type="number"
-              min="1800"
-              max="2100"
+              id="original_title"
+              name="original_title"
+              type="text"
               required
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            {state.errors?.release_year && <p className="text-sm text-red-400 mt-1">{state.errors.release_year}</p>}
+            {state.errors?.original_title && <p className="text-sm text-red-400 mt-1">{state.errors.original_title}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="release_date" className="text-sm font-medium text-slate-300 block mb-2">Data de Lançamento</label>
+            <input
+              id="release_date"
+              name="release_date"
+              type="date"
+              required
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+            {state.errors?.release_date && <p className="text-sm text-red-400 mt-1">{state.errors.release_date}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="budget" className="text-sm font-medium text-slate-300 block mb-2">Orçamento</label>
+            <input
+              id="budget"
+              name="budget"
+              type="number"
+              min="0"
+              required
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+            {state.errors?.budget && <p className="text-sm text-red-400 mt-1">{state.errors.budget}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="overview" className="text-sm font-medium text-slate-300 block mb-2">Descrição</label>
+            <textarea
+              id="overview"
+              name="overview"
+              rows={4}
+              required
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+            {state.errors?.overview && <p className="text-sm text-red-400 mt-1">{state.errors.overview}</p>}
           </div>
 
           <div>
