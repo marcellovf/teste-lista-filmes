@@ -71,5 +71,6 @@ npx prisma migrate dev
 ```bash
 npm run dev
 ```
+Agradeço pela oportunidade de participar deste desafio e espero que apreciem a solução desenvolvida com dedicação e atenção aos requisitos propostos.
 
 Email para contato caso queira o meu .env: marcellovasconcelos91@gmail.com
