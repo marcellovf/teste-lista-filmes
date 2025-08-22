@@ -72,4 +72,4 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Email para contato: marcellovasconcelos91@gmail.com
+Email para contato caso queira o meu .env: marcellovasconcelos91@gmail.com
