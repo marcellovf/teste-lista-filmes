@@ -8,8 +8,8 @@ import { getGenresAction } from '@/app/actions';
 import ActiveFilters from './ActiveFilters';
 
 interface SearchAndFiltersProps {
-  filters: { query?: string; genre?: string[]; start_date?: string; end_date?: string; };
-  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string[]; start_date?: string; end_date?: string; }>) => void;
+  filters: { query?: string; genre?: string[]; start_date?: string; end_date?: string; min_duration?: number; max_duration?: number; };
+  onFilterChange: (newFilters: Partial<{ query?: string; genre?: string[]; start_date?: string; end_date?: string; min_duration?: number; max_duration?: number; }>) => void;
 }
 
 const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) => {
@@ -110,6 +110,32 @@ const SearchAndFilters = ({ filters, onFilterChange }: SearchAndFiltersProps) =>
                 />
                 <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
               </div>
+            </div>
+          </div>
+
+          {/* Filtro de Duração */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="min_duration" className="text-sm text-slate-400 block mb-2">Duração Mínima (min)</label>
+              <input
+                type="number"
+                id="min_duration"
+                placeholder="Ex: 60"
+                value={filters.min_duration || ''}
+                onChange={(e) => onFilterChange({ min_duration: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="max_duration" className="text-sm text-slate-400 block mb-2">Duração Máxima (min)</label>
+              <input
+                type="number"
+                id="max_duration"
+                placeholder="Ex: 180"
+                value={filters.max_duration || ''}
+                onChange={(e) => onFilterChange({ max_duration: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
             </div>
           </div>
         </div>
