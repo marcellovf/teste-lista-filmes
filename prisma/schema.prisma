@@ -21,18 +21,23 @@ model User {
   verificationExpires DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  moviesAdded Movie[]
 }
 
 model Movie {
-  id           Int      @id @default(autoincrement())
-  title        String
-  poster_path  String?
-  overview     String
-  release_date DateTime
-  original_title String
-  budget       Int
-  durationInMinutes Int
-  genres       Genre[]  @relation("MovieToGenre")
+  id               Int      @id @default(autoincrement())
+  title            String
+  poster_path      String?
+  overview         String?
+  release_date     DateTime?
+  original_title   String?
+  budget           Int?
+  durationInMinutes Int?
+  sent             Boolean @default(false) 
+  addedBy          User    @relation(fields: [addedById], references: [id])
+  addedById        Int     
+  genres           Genre[]  @relation("MovieToGenre")
 }
 
 model Genre {

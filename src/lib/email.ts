@@ -1,16 +1,22 @@
 'use server';
 
-import nodemailer from 'nodemailer';
+import nodemailer, { Transporter } from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.USER_EMAIL,//jovanny.hayes@ethereal.email
-    pass: process.env.USER_EMAIL_PASSWORD,//JqKHZ97zyDnCPMBQ9f
-  },
-});
+
+export async function createTransporter(): Promise<Transporter> {
+  const testAccount = await nodemailer.createTestAccount();
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  return transporter;
+}
 
 export async function sendVerificationEmail(email: string, token: string) {
   // const verificationLink = `${process.env.NEXT_PUBLIC_BASE_URL}/api/verify?token=${token}`;
@@ -24,6 +30,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   };
 
   try {
+    const transporter = await createTransporter();
     const info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
