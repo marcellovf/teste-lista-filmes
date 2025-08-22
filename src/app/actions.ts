@@ -205,9 +205,11 @@ export async function getMoviesAction(filters: {
   genre?: string[];
   start_date?: string;
   end_date?: string;
+  min_duration?: number;
+  max_duration?: number;
   page?: number;
 }) {
-  const { query, genre, start_date, end_date, page = 1 } = filters;
+  const { query, genre, start_date, end_date, min_duration, max_duration, page = 1 } = filters;
 
   const whereClause: any = {
     AND: [],
@@ -230,6 +232,17 @@ export async function getMoviesAction(filters: {
       dateFilter.lte = new Date(end_date);
     }
     whereClause.AND.push({ release_date: dateFilter });
+  }
+
+  if (min_duration !== undefined || max_duration !== undefined) {
+    const durationFilter: { gte?: number; lte?: number } = {};
+    if (min_duration !== undefined) {
+      durationFilter.gte = min_duration;
+    }
+    if (max_duration !== undefined) {
+      durationFilter.lte = max_duration;
+    }
+    whereClause.AND.push({ durationInMinutes: durationFilter });
   }
 
   try {
