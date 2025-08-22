@@ -68,7 +68,17 @@ const AddMovieFormSchema = z.object({
     z.number().int().min(0, { message: 'Orçamento inválido.' }),
   ),
   release_date: z.preprocess((arg) => {
-    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+    if (typeof arg === "string") {
+      // Se for string (ex: "YYYY-MM-DD"), parseia e cria uma data UTC
+      const [year, month, day] = arg.split('-').map(Number);
+      // month - 1 porque Date.UTC usa mês baseado em 0 (janeiro = 0)
+      return new Date(Date.UTC(year, month - 1, day));
+    }
+    if (arg instanceof Date) {
+      // Se já for um objeto Date, garante que seja UTC meia-noite
+      return new Date(Date.UTC(arg.getFullYear(), arg.getMonth(), arg.getDate()));
+    }
+    return arg; // Deixa o Zod lidar com tipos inválidos
   }, z.date({ message: 'Data de lançamento inválida.' })),
   durationInMinutes: z.preprocess(
     (val) => Number(val),
@@ -287,8 +297,9 @@ export async function addMovieAction(prevState: FormState, formData: FormData) {
         original_title,
         overview,
         budget,
-        release_date,
+        release_date: release_date,
         durationInMinutes: durationInMinutes,
+        addedById: session.user.id,
         genres: {
           connect: genres.map(genreId => ({ id: parseInt(genreId) })),
         },

@@ -59,7 +59,7 @@ export default async function MovieDetailPage({ params }: PageProps) {
           <div className="flex items-center text-slate-400 mb-4">
             <div className="flex items-center mr-6">
               <Calendar className="w-5 h-5 mr-2" />
-              <span>{new Date(movie.release_date).toLocaleDateString('pt-BR')}</span>
+              <span>{new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'UTC' }).format(new Date(movie.release_date))}</span>
             </div>
             <div className="flex items-center">
               <Clock className="w-5 h-5 mr-2" />

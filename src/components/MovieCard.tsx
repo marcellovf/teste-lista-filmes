@@ -36,7 +36,7 @@ const MovieCard = ({ movie }: MovieCardProps) => {
           </h3>
           <div className="flex justify-between items-center mt-2">
             <p className="text-sm text-slate-400">
-              {new Date(movie.release_date).toLocaleDateString('pt-BR')}
+              {new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'UTC' }).format(new Date(movie.release_date))}
             </p>
             <p className="text-sm text-slate-400">
               {movie.durationInMinutes} min
