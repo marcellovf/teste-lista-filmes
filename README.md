@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Gestão de Filmes
 
-## Getting Started
+Este projeto é um sistema completo para gerenciamento de filmes, com frontend em Next.js, TypeScript e banco de dados PostgreSQL. Ele suporta autenticação, cadastro de usuários, listagem de filmes com busca, filtros e paginação, adição/edição de filmes com envio automático de e-mails na estreia e modo claro/escuro.
 
-First, run the development server:
+---
 
+## Tecnologias Utilizadas
+
+### Frontend
+- **React** (ou React + Next.js)
+- CSS / Tailwind CSS
+- Responsivo para diferentes larguras
+
+### Backend
+- **TypeScript**
+- **Prisma** (ORM)
+- **PostgreSQL** (com migrations)
+- Armazenamento de imagens: AWS S3
+- Envio de e-mails: Ethereal
+
+---
+
+## Funcionalidades
+
+### Autenticação
+- Login com e-mail e senha
+- Cadastro de novos usuários
+- Redirecionamento automático caso o usuário já esteja logado
+
+### Filmes
+- Listagem com busca por texto
+- Paginação (10 filmes por página)
+- Filtros por:
+  - Titulo
+  - Intervalo de datas
+  - Categorias
+  - Duração
+- Adição/Edição de filmes
+- Se a data de lançamento for futura, envia e-mail automático no dia da estreia
+
+## Pré-requisitos
+  - Node.js >= 22
+  - npm ou yarn
+  - PostgreSQL[NeonDB](https://neon.com/docs/connect/connect-from-any-app)
+  - Conta de armazenamento de imagens (AWS S3)
+
+## Instalação
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/marcellovf/teste-lista-filmes.git
+cd teste-lista-filmes
+```
+2. Instale as dependências:
+```bash
+npm install
+```
+3. Configure o .env:
+```bash
+DATABASE_URL="" // Url do NeonDB. Em pré-requisitos tem a doc de integração
+AWS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+AWS_S3_BUCKET_NAME=""
+AWS_S3_REGION=""
+```
+4. Executar o migrate do prisma:
+```bash
+npx prisma migrate dev
+```
+5. Executar o projeto:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Email para contato: marcellovasconcelos91@gmail.com
